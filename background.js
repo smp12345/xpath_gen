@@ -1,7 +1,7 @@
 // add click action for the button on the right of the address bar
 chrome.browserAction.onClicked.addListener((tab) => { // jshint ignore: line
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      // let's see a call back hell
+      // Behold, let's see a callback hell!
       chrome.tabs.executeScript(null, {file: 'lib/utils.js'}, function() {
         chrome.tabs.executeScript(null, {file: 'lib/xpath.js'}, function() {
           chrome.tabs.executeScript(null, {file: 'lib/vue.js'}, function() {

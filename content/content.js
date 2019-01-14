@@ -29,12 +29,12 @@ global.togglePanel = togglePanel
 
 // the panel html template.
 //
-// it's not that I like to write divs, just don't want to mess up with the
+// It's not that I like to write divs, I just don't want to mess up with the
 // page's original styles.
 let panelTemplate = `
 <div class="xpal-panel" id="xpal-panel">
     <div id="xpal-title-bar">
-        <div id="xpal-title">XPal - drag here to move</div>
+        <div id="xpal-title">XPath Generator - part of Project Baelish</div>
         <div id="xpal-title-control">
           <a id="xpal-minimize-button" title="minimize" class="xpal-title-bar-button" @click="minimizeXpathPanel">_</a>
           <a id="xpal-close-button" title="close" class="xpal-title-bar-button" @click="closeXpathPanel">x</a>
@@ -62,7 +62,7 @@ let panelTemplate = `
                   <th>Delete</th>
               </tr>
               <tr v-for="(result, index) in xpaths">
-                  <td class="xpath-expression">
+                  <td class="xpath-expression" contenteditable="true">
                     {{result.elementXpath}}
                   </td>
                   <td class="xpath-expression" v-if="isRelative">
@@ -85,10 +85,10 @@ let panelTemplate = `
           <div>XPath Test</div>
           <textarea placeholder="input your xpath here to test" v-model="xpathTesting"></textarea>
           <div>
-              <a class="xpath-button" @click="addBack(xpathTesting)">Add To Table</a>
+            <a class="xpath-button" @click="addBack(xpathTesting)">Add To Table</a>
           </div>
           <div id="xpal-value">The result({{xpathValue.length}}):
-            <ol>
+            <ol contenteditable="true">
             <li v-for="val in xpathValue">
               {{ val }}
             </li>
@@ -180,7 +180,7 @@ let vm = new Vue({
             let flag = true;
             xpath = X.removePostfix(xpath)
             for (let el of X.selectElements(xpath)) {
-                if (flag)
+                try {
                   el.scrollIntoView()
                 flag = false;
                 if (!this.isRelative) {

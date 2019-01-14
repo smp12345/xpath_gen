@@ -1,9 +1,9 @@
 {
     "manifest_version": 2,
 
-    "name": "XPal - XPath Generator & Tester",
+    "name": "XPath Generator (part of Project Baelish)",
     "description": "Generate and test xpath expressions hassle free with WYSIWYG GUI",
-    "version": "6.0.0",
+    "version": "7.0.0",
 
     "background": {
         "persistent": false,

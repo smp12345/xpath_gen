@@ -3,6 +3,13 @@
  */
 
 .xpal-panel {
+    all: initial;
+    * {
+        all: unset;
+    }
+}
+
+.xpal-panel {
     position: fixed;
     right: 100px;
     top: 100px;
@@ -78,6 +85,7 @@
     margin-right: 0.2em;
     border-collapse: collapse;
     overflow-y: auto;
+    table-layout: fixed;
 }
 
 #table-panel {
@@ -190,4 +198,9 @@
     -moz-box-sizing: border-box;    /* For Firefox                          */
     -webkit-box-sizing: border-box; /* For Safari                           */
     font-size: 100%;
+}
+
+.xpath-expression {
+    max-width: 20em;
+    overflow-x: scroll;
 }
