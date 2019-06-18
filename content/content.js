@@ -180,15 +180,16 @@ let vm = new Vue({
             let flag = true;
             xpath = X.removePostfix(xpath)
             for (let el of X.selectElements(xpath)) {
-                try {
-                  el.scrollIntoView()
+              if (flag) {
+                el.scrollIntoView()
                 flag = false;
-                if (!this.isRelative) {
-                    el.setAttribute("data-xpal", "xpath-verify-selected");
-                    this.pushSelectedDom(el);
-                } else {
-                    el.setAttribute("data-xpal", "xpath-relative-verify-selected");
-                }
+              }
+              if (!this.isRelative) {
+                el.setAttribute("data-xpal", "xpath-verify-selected");
+                this.pushSelectedDom(el);
+              } else {
+                el.setAttribute("data-xpal", "xpath-relative-verify-selected");
+              }
             }
         },
         deleteXpath: function(index) {

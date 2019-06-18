@@ -4,9 +4,6 @@
 
 .xpal-panel {
     all: initial;
-    * {
-        all: unset;
-    }
 }
 
 .xpal-panel {
