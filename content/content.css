@@ -64,6 +64,12 @@
     display: inline-block;
 }
 
+.xpath-button--disable {
+    color: #8cc5ff;
+    background-color: #ecf5ff;
+    cursor: not-allowed;
+}
+
 
 #xpath-table {
     text-align: left;
@@ -118,18 +124,32 @@
  */
 
 *[data-xpal="xpath-inspecting"] {
-    background-color: yellow;
-    outline: 1px solid #c00;
+    background-color: yellow!important;
+    outline: 1px solid #c00!important;
 }
 
 *[data-xpal="xpath-selected"] {
-    background-color: #63A35C;
-    outline: 1px solid #c00;
+    background-color: rgb(130, 202, 122)!important;
+    outline: 1px solid #c00!important;
 }
 
 *[data-xpal="xpath-verify-selected"] {
-    background-color: #E1C0DC;
-    outline: 1px solid #c00;
+    background-color: #E1C0DC!important;
+    outline: 1px solid #c00!important;
+}
+*[data-xpal="xpath-relative-inspecting"] {
+    background-color: yellow!important;
+    outline: 1px solid #c00!important;
+}
+
+*[data-xpal="xpath-relative-selected"] {
+    background-color: rgb(139, 207, 131)!important;
+    outline: 1px solid #c00!important;
+}
+
+*[data-xpal="xpath-relative-verify-selected"] {
+    background-color: rgb(233, 139, 139)!important;
+    outline: 1px solid #c00!important;
 }
 
 /**

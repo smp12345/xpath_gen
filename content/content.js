@@ -43,16 +43,30 @@ let panelTemplate = `
     <div id="xpal-main">
       <div>
           <a class="xpath-button" id="inspect-button" @click="toggleInspect">{{ inspectButton }}</a>
+          <a :class="['xpath-button', {
+                'xpath-button--disable': !selectedDom.length
+            }]"
+            id="relatively-inspect-button"
+            @click="toggleRelativelyInspect">{{ relativelyInspectButton }}</a>
           <a class="xpath-button" id="clear-style-button" @click="clearAll">Clear Style</a>
           <a class="xpath-button" id="delete-all-button" @click="clearXpaths">Delete All</a>
       </div>
       <div id="table-panel">
           <table id="xpath-table">
               <tr>
-                  <th>XPath</th><th>Matches</th><th>Test</th><th>Verify</th><th>Delete</th>
+                  <th>XPath</th>
+                  <th v-if="isRelative">Relatively XPath</th>
+                  <th>Matches</th>
+                  <th>Test</th>
+                  <th>Verify</th>
+                  <th>Delete</th>
+              </tr>
               <tr v-for="(result, index) in xpaths">
                   <td class="xpath-expression">
                     {{result.elementXpath}}
+                  </td>
+                  <td class="xpath-expression" v-if="isRelative">
+                    {{result.elementRelativelyXpath}}
                   </td>
                   <td class="xpath-match-count">
                     {{result.matchCount}}
@@ -88,58 +102,93 @@ let panelTemplate = `
 document.body.insertAdjacentHTML('beforeend', panelTemplate)
 
 let inspecting = false;
+let relativelyInspecting = false;
 
 let vm = new Vue({
     el: '.xpal-panel',
     data: {
+        isRelative: false,
         inspectButton: "Start Inspect",
         xpaths: [],
-        xpathTesting: null
-    },
-    computed: {
-        xpathValue: function () {
-          try {
-            let value = X.stringify(this.xpathTesting)
-            this.verifyXpath(this.xpathTesting)
-            return value;
-          } catch (e) {
-            return ['not valid expression'];
-          }
-        }
+        xpathTesting: '',
+        relativelyInspectButton: "Start relatively Inspect",
+        verifyXpathVal: '',
+        selectedDom: [],
+        xpathValue: [],
     },
     methods: {
+        getXpathValue: function () {
+            try {
+                const xpathTesting = this.xpathTesting;
+                let value = X.stringify(xpathTesting)
+                this.verifyXpath(xpathTesting)
+                this.xpathValue = value;
+            } catch (e) {
+                this.xpathValue = ['not valid expression'];
+            }
+        },
         addBack: function(xpath) {
           let matchCount = X.selectElements(xpath).length;
           this.xpaths.unshift({elementXpath: xpath, matchCount});
         },
         toggleInspect: function() {
+            this.isRelative = false;
             if (inspecting) {
                 this.inspectButton = "Start Inspect";
                 stopInspect();
-                window.inspecting = false;
+                inspecting = false;
             } else {
                 this.inspectButton = "Stop Inspect";
                 startInspect();
-                window.inspecting = true;
+                inspecting = true;
+            }
+        },
+        toggleRelativelyInspect: function() {
+            if (!this.isRelative) {
+                this.clearXpaths();
+            }
+            this.isRelative = true;
+            if (!this.selectedDom.length) {
+                return;
+            }
+            if (relativelyInspecting) {
+                this.relativelyInspectButton = "Start relatively Inspect";
+                stopRelativelyInspect();
+                relativelyInspecting = false;
+            } else {
+                this.relativelyInspectButton = "Stop relatively Inspect";
+                startRelativelyInspect();
+                relativelyInspecting = true;
             }
         },
         clearXpaths: function() {
             this.xpaths = [];
         },
+        clearSelectedDom: function() {
+            this.selectedDom = [];
+        },
+        pushSelectedDom(el) {
+            this.selectedDom.push(el);
+        },
         verifyXpath: function(xpath) {
-            for (let el of document.getElementsByTagName('*')) {
-                //el.classList.remove('xpath-verify-selected');
-                el.removeAttribute("data-xpal");
+            if (!this.isRelative) {
+                this.verifyXpathVal = xpath;
+                this.clearAll();
+            } else {
+                this.clearRelativelyAll();
             }
-            this.clearAll();
             let flag = true;
             xpath = X.removePostfix(xpath)
             for (let el of X.selectElements(xpath)) {
                 if (flag)
                   el.scrollIntoView()
                 flag = false;
-                //el.classList.add('xpath-verify-selected');
-                el.setAttribute("data-xpal", "xpath-verify-selected");
+                if (!this.isRelative) {
+                    el.setAttribute("data-xpal", "xpath-verify-selected");
+                    this.pushSelectedDom(el);
+                } else {
+                    el.setAttribute("data-xpal", "xpath-relative-verify-selected");
+                }
             }
         },
         deleteXpath: function(index) {
@@ -147,10 +196,13 @@ let vm = new Vue({
         },
         clearAll: function() {
             for (let el of document.getElementsByTagName('*')) {
-                //el.classList.remove('xpath-verify-selected');
-                //el.classList.remove('xpath-selected');
-                //el.classList.remove('xpath-inspecting');
                 el.removeAttribute("data-xpal");
+            }
+            this.clearSelectedDom();
+        },
+        clearRelativelyAll() {
+            for (let el of document.querySelectorAll('[data-xpal^=xpath-relative]')) {
+                el.removeAttribute('data-xpal');
             }
         },
         closeXpathPanel: function() {
@@ -161,6 +213,11 @@ let vm = new Vue({
         },
         setTestXpath: function(xpath) {
           this.xpathTesting = xpath;
+        }
+    },
+    watch: {
+        xpathTesting() {
+            this.getXpathValue();
         }
     }
 });
@@ -183,6 +240,9 @@ function listenOnce(node, type, listener, useCapture=false) {
     node.addEventListener(type, wrapper, useCapture);
     return wrapper;
 };
+/**
+ * update xpath result
+ */
 
 let prev = null;
 let prevListener = null;
@@ -203,9 +263,6 @@ function inspectHandler(event) {
     event.stopPropagation();
 };
 
-/**
- * update xpath result
- */
 function clickHandler(event) {
     //event.currentTarget.classList.remove('xpath-inspecting');
     event.currentTarget.removeAttribute('data-xpal');
@@ -228,8 +285,6 @@ function clickHandler(event) {
 
 function startInspect() {
     for (let el of document.getElementsByTagName('*')) {
-        //el.classList.remove('xpath-selected');
-        //el.classList.remove('xpath-verify-selected');
         el.removeAttribute('data-xpal');
     }
     for (let el of document.getElementsByTagName('*')) {
@@ -245,6 +300,64 @@ function startInspect() {
 function stopInspect() {
     for (let el of document.getElementsByTagName('*')) {
         el.removeEventListener('mouseover', inspectHandler);
+    }
+}
+
+let relativelyPrev = null;
+let relativelyPrevListener = null;
+
+function relativelyInspectHandler(event) {
+    if (relativelyPrev) {
+        relativelyPrev.removeAttribute('data-xpal');
+        relativelyPrev.removeEventListener('click', relativelyPrevListener);
+        relativelyPrev = null;
+    }
+    if (event.currentTarget) {
+        relativelyPrev = event.currentTarget;
+        relativelyPrevListener = listenOnce(event.currentTarget, 'click', relativelyClickHandler);
+        relativelyPrev.setAttribute('data-xpal', 'xpath-relative-inspecting');
+    }
+    event.stopPropagation();
+}
+
+function relativelyClickHandler(event) {
+    event.currentTarget.removeAttribute('data-xpal');
+    let possibleXpaths = X.findPossibleXpaths(event.currentTarget); 
+    possibleXpaths = possibleXpaths.filter(item => item.startsWith(vm.verifyXpathVal));
+    for (let elementXpath of possibleXpaths) {
+        try {
+          let matchCount = X.selectElements(elementXpath).length;
+          vm.xpaths.unshift({
+              elementXpath,
+              elementRelativelyXpath: elementXpath.replace(vm.verifyXpathVal, ''),
+              matchCount
+          });
+        } catch (e) {
+          console.warn(`${elementXpath} is not valid`);
+        }
+    }
+    event.currentTarget.setAttribute('data-xpal', 'xpath-relative-selected')
+    stopRelativelyInspect();
+    relativelyInspecting = false;
+    vm.relativelyInspectButton = "Start Relatively Inspect";
+    event.stopImmediatePropagation();
+    event.preventDefault();
+}
+
+function startRelativelyInspect() {
+    for (let el of document.querySelectorAll('[data-xpal^=xpath-relative]')) {
+        el.removeAttribute('data-xpal');
+    }
+    for (let selectedEl of vm.selectedDom) {
+        for (let el of selectedEl.querySelectorAll('*')) {
+            el.addEventListener('mouseover', relativelyInspectHandler);
+        }
+    }
+}
+
+function stopRelativelyInspect() {
+    for (let el of document.getElementsByTagName('*')) {
+        el.removeEventListener('mouseover', relativelyInspectHandler);
     }
 }
 
