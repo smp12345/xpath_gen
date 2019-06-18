@@ -17,4 +17,3 @@ chrome.browserAction.onClicked.addListener((tab) => { // jshint ignore: line
       */
     });
 });
-

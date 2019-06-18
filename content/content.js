@@ -263,10 +263,9 @@ function inspectHandler(event) {
     event.stopPropagation();
 };
 
-function clickHandler(event) {
-    //event.currentTarget.classList.remove('xpath-inspecting');
-    event.currentTarget.removeAttribute('data-xpal');
-    for (let elementXpath of X.findPossibleXpaths(event.currentTarget)) {
+function selectDom(dom) {
+    dom.removeAttribute('data-xpal');
+    for (let elementXpath of X.findPossibleXpaths(dom)) {
         try {
           let matchCount = X.selectElements(elementXpath).length;
           vm.xpaths.unshift({elementXpath, matchCount});
@@ -274,8 +273,11 @@ function clickHandler(event) {
           console.warn(`${elementXpath} is not valid`);
         }
     }
-    //event.currentTarget.classList.add('xpath-selected');
-    event.currentTarget.setAttribute('data-xpal', 'xpath-selected')
+    dom.setAttribute('data-xpal', 'xpath-selected');
+}
+
+function clickHandler(event) {
+    selectDom(event.currentTarget);
     stopInspect();
     inspecting = false;
     vm.inspectButton = "Start Inspect";
@@ -320,9 +322,9 @@ function relativelyInspectHandler(event) {
     event.stopPropagation();
 }
 
-function relativelyClickHandler(event) {
-    event.currentTarget.removeAttribute('data-xpal');
-    let possibleXpaths = X.findPossibleXpaths(event.currentTarget); 
+function relativelySelectDom(dom) {
+    dom.removeAttribute('data-xpal');
+    let possibleXpaths = X.findPossibleXpaths(dom); 
     possibleXpaths = possibleXpaths.filter(item => item.startsWith(vm.verifyXpathVal));
     for (let elementXpath of possibleXpaths) {
         try {
@@ -336,7 +338,12 @@ function relativelyClickHandler(event) {
           console.warn(`${elementXpath} is not valid`);
         }
     }
-    event.currentTarget.setAttribute('data-xpal', 'xpath-relative-selected')
+    dom.setAttribute('data-xpal', 'xpath-relative-selected')
+}
+
+
+function relativelyClickHandler(event) {
+    relativelySelectDom(event.currentTarget);
     stopRelativelyInspect();
     relativelyInspecting = false;
     vm.relativelyInspectButton = "Start Relatively Inspect";
@@ -360,6 +367,117 @@ function stopRelativelyInspect() {
         el.removeEventListener('mouseover', relativelyInspectHandler);
     }
 }
+
+/******************************************************************************
+ * 切换选中dom
+ *****************************************************************************/
+
+document.onkeydown = function(e) {
+    if (e.shiftKey) {
+        if (e.keyCode === 38) { // up
+            keydownUP();
+        } else if (e.keyCode === 40) { // down
+            keydownDown();
+        } else if (e.keyCode === 37) { // left
+            keydownLeft();
+        } else if (e.keyCode === 39) { // right
+            keydownRight();
+        }
+    }
+};
+
+function getSelectedDom () {
+    let dom;
+    if (vm.isRelative) {
+        dom = document.querySelector('[data-xpal=xpath-relative-selected]');
+    } else {
+        dom = document.querySelector('[data-xpal=xpath-selected]');
+    }
+    return dom;
+}
+
+function keydownUP() {
+    const selectedDom = getSelectedDom();
+    if (!selectedDom) {
+        return;
+    }
+    const parentDom = selectedDom.parentNode;
+    if (!parentDom) {
+        return;
+    }
+    if (vm.isRelative) {
+        if (parentDom.getAttribute('data-xpal') === 'xpath-verify-selected') {
+            return;
+        }
+    } else {
+        if (parentDom.nodeName === 'BODY' || parentDom.nodeName === 'HTML') {
+            return;
+        }
+    }
+    selectedDom.removeAttribute('data-xpal');
+    if (vm.isRelative) {
+        relativelySelectDom(parentDom);
+    } else {
+        selectDom(parentDom);
+    }
+};
+
+function keydownDown() {
+    const selectedDom = getSelectedDom();
+    if (!selectedDom) {
+        return;
+    }
+    const firstChildDom = selectedDom.firstElementChild;
+    if (!firstChildDom) {
+        return;
+    }
+    selectedDom.removeAttribute('data-xpal');
+    if (vm.isRelative) {
+        relativelySelectDom(firstChildDom);
+    } else {
+        selectDom(firstChildDom);
+    }
+};
+
+function keydownLeft() {
+    const selectedDom = getSelectedDom();
+    if (!selectedDom) {
+        return;
+    }
+    const preDom = selectedDom.previousElementSibling;
+    if (!preDom) {
+        return;
+    }
+    if (preDom.nodeName === 'SCRIPT' || preDom.id === 'xpal-panel') {
+        return;
+    }
+    selectedDom.removeAttribute('data-xpal');
+    if (vm.isRelative) {
+        relativelySelectDom(preDom);
+    } else {
+        selectDom(preDom);
+    }
+};
+
+function keydownRight() {
+    const selectedDom = getSelectedDom();
+    if (!selectedDom) {
+        return;
+    }
+    const nextDom = selectedDom.nextElementSibling;
+    if (!nextDom) {
+        return;
+    }
+    if (nextDom.nodeName === 'SCRIPT' || nextDom.id === 'xpal-panel') {
+        return;
+    }
+    selectedDom.removeAttribute('data-xpal');
+    if (vm.isRelative) {
+        relativelySelectDom(nextDom);
+    } else {
+        selectDom(nextDom);
+    }
+};
 
 /******************************************************************************
  * Drag and Drop of Xpath Generator Panel

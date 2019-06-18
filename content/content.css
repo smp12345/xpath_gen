@@ -125,31 +125,31 @@
 
 *[data-xpal="xpath-inspecting"] {
     background-color: yellow!important;
-    outline: 1px solid #c00!important;
+    box-shadow: 0px 0px 20px 1px yellow !important;
 }
 
 *[data-xpal="xpath-selected"] {
     background-color: rgb(130, 202, 122)!important;
-    outline: 1px solid #c00!important;
+    box-shadow: 0px 0px 20px 1px rgb(130, 202, 122) !important;
 }
 
 *[data-xpal="xpath-verify-selected"] {
     background-color: #E1C0DC!important;
-    outline: 1px solid #c00!important;
+    box-shadow: 0px 0px 20px 1px #E1C0DC !important;
 }
 *[data-xpal="xpath-relative-inspecting"] {
     background-color: yellow!important;
-    outline: 1px solid #c00!important;
+    box-shadow: 0px 0px 20px 1px yellow !important;
 }
 
 *[data-xpal="xpath-relative-selected"] {
     background-color: rgb(139, 207, 131)!important;
-    outline: 1px solid #c00!important;
+    box-shadow: 0px 0px 20px 1px rgb(139, 207, 131) !important;
 }
 
 *[data-xpal="xpath-relative-verify-selected"] {
     background-color: rgb(233, 139, 139)!important;
-    outline: 1px solid #c00!important;
+    box-shadow: 0px 0px 20px 1px rgb(233, 139, 139) !important;
 }
 
 /**
