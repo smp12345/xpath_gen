@@ -35,6 +35,7 @@ let panelTemplate = `
 <div class="xpal-panel" id="xpal-panel">
     <div id="xpal-title-bar">
         <div id="xpal-title">XPath Generator - part of Project Baelish</div>
+        <div>按 Shift+↑ 扩大选取，Shift+↓缩小，Shift+←上一个元素，Shift+→下一个元素</div>
         <div id="xpal-title-control">
           <a id="xpal-minimize-button" title="minimize" class="xpal-title-bar-button" @click="minimizeXpathPanel">_</a>
           <a id="xpal-close-button" title="close" class="xpal-title-bar-button" @click="closeXpathPanel">x</a>
